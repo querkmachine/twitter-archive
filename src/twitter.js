@@ -115,7 +115,7 @@ class Twitter {
 	getUrlObject(url) {
 		let expandedUrl = url.expanded_url ?? url.url;
 		let displayUrl = expandedUrl;
-		let className = "tweet-url";
+		let className = "kimLink tweet-url";
 		let targetUrl = expandedUrl;
 
 		// Links to my tweets
@@ -131,7 +131,7 @@ class Twitter {
 			// displayUrl = displayUrl.replace(/(\d+)/, function(match) {
 			// 	return "" + (match.length > 6 ? "…" : "") + match.substr(-6);
 			// });
-			className = "tweet-username";
+			className = "kimLink tweet-username";
 		} else {
 			if(displayUrl.startsWith("http://")) {
 				displayUrl = displayUrl.substring("http://".length);
@@ -192,7 +192,7 @@ class Twitter {
 			for(let mention of tweet.entities.user_mentions) {
 				textReplacements.set(mention.screen_name, {
 					regex: new RegExp(`@${mention.screen_name}`, "i"),
-					html: `<a href="${twitterLink(`https://twitter.com/${mention.screen_name}/`)}" class="tweet-username h-card">@<span class="p-nickname">${mention.screen_name}</span></a>`,
+					html: `<a href="${twitterLink(`https://twitter.com/${mention.screen_name}/`)}" class="kimLink tweet-username h-card">@<span class="p-nickname">${mention.screen_name}</span></a>`,
 				});
 			}
 		}
@@ -266,7 +266,7 @@ class Twitter {
 		}
 
 		if(medias.length) {
-			text += `<is-land on:visible><div class="tweet-medias">${medias.join("")}</div></is-land>`;
+			text += `<is-land on:visible><div class="kim-!-margin-top-4 tweet-medias">${medias.join("")}</div></is-land>`;
 		}
 
 		return text;
@@ -284,8 +284,8 @@ class Twitter {
 	}
 
 	renderDate(d) {
-		let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-		return `${d.getFullYear()} ${months[d.getMonth()]} ${d.getDate()}`;
+		let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+		return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 	}
 
   renderPercentage(count, total) {
@@ -303,25 +303,24 @@ class Twitter {
 		let shareCount = parseInt(tweet.retweet_count, 10) + (tweet.quote_count ? tweet.quote_count : 0);
 
     return `<li id="${tweet.id_str}" class="tweet h-entry${options.class ? ` ${options.class}` : ""}${this.isReply(tweet) && tweet.in_reply_to_screen_name !== metadata.username ? " is_reply " : ""}${this.isRetweet(tweet) ? " is_retweet" : ""}${this.isMention(tweet) ? " is_mention" : ""}" data-pagefind-index-attrs="id">
-		${this.isReply(tweet) ? `<a href="${tweet.in_reply_to_screen_name !== metadata.username ? twitterLink(`https://twitter.com/${tweet.in_reply_to_screen_name}/status/${tweet.in_reply_to_status_id_str}`) : `/${tweet.in_reply_to_status_id_str}/`}" class="tweet-pretext u-in-reply-to">…in reply to @${tweet.in_reply_to_screen_name}</a>` : ""}
-			<div class="tweet-text e-content"${options.attributes || ""}>${await this.renderFullText(tweet, options)}</div>
-			<span class="tweet-metadata">
-				${!options.hidePermalink ? `<a href="/${tweet.id_str}/" class="tag tag-naked">Permalink</a>` : ""}
-				<a href="https://twitter.com/${metadata.username}/status/${tweet.id_str}" class="tag tag-icon u-url" data-pagefind-index-attrs="href"><span class="sr-only">On twitter.com </span><img src="${this.avatarUrl("https://twitter.com/")}" alt="Twitter logo" width="27" height="27"></a>
-				${!this.isReply(tweet) ? (this.isRetweet(tweet) ? `<span class="tag tag-retweet">Retweet</span>` : (this.isMention(tweet) ? `<span class="tag">Mention</span>` : "")) : ""}
-				${!this.isRetweet(tweet) ? `<a href="/" class="tag tag-naked tag-lite tag-avatar"><img src="${metadata.avatar}" width="52" height="52" alt="${metadata.username}’s avatar" class="tweet-avatar"></a>` : ""}
+		${this.isReply(tweet) ? `<div class="kimBody-s kim-!-margin-bottom-2"><a href="${tweet.in_reply_to_screen_name !== metadata.username ? twitterLink(`https://twitter.com/${tweet.in_reply_to_screen_name}/status/${tweet.in_reply_to_status_id_str}`) : `/${tweet.in_reply_to_status_id_str}/`}" class="kimLink tweet-pretext u-in-reply-to">…in reply to @${tweet.in_reply_to_screen_name}</a></div>` : ""}
+			<div class="kimBody-l kim-!-margin-bottom-2 kim-!-padding-4 tweet-text e-content"${options.attributes || ""}>${await this.renderFullText(tweet, options)}</div>
+			<ul class="kimList kimList-inline kimBody-s tweet-metadata">
+				${tweet.date ? `<li><time class="tag tag-naked tag-lite dt-published" datetime="${tweet.date.toISOString()}">${this.renderDate(tweet.date)}</time></li>` : ""}
+				${!options.hidePermalink ? `<li><a href="/${tweet.id_str}/" class="kimLink-plain tag tag-naked">Permalink</a></li>` : ""}
+				<!--<li><a href="https://twitter.com/${metadata.username}/status/${tweet.id_str}" class="kimLink-plain tag tag-icon u-url" data-pagefind-index-attrs="href">On Twitter</a></li>-->
+				${!this.isReply(tweet) ? (this.isRetweet(tweet) ? `<li><span class="tag tag-retweet">Retweet</span></li>` : (this.isMention(tweet) ? `<li><span class="tag">Mention</span></li>` : "")) : ""}
 				${options.showPopularity && !this.isRetweet(tweet) ? `
-					${shareCount > 0 ? `<span class="tag tag-lite tag-retweet">♻️ ${this.renderNumber(shareCount)}<span class="sr-only"> Retweet${shareCount !== "1" ? "s" : ""}</span></span>` : ""}
-					${tweet.favorite_count > 0 ? `<span class="tag tag-lite tag-favorite">❤️ ${this.renderNumber(tweet.favorite_count)}<span class="sr-only"> Favorite${tweet.favorite_count !== "1" ? "s" : ""}</span></span>` : ""}
+					${shareCount > 0 ? `<li><span class="tag tag-lite tag-retweet">♻️ ${this.renderNumber(shareCount)} retweet${shareCount !== "1" ? "s" : ""}</span></li>` : ""}
+					${tweet.favorite_count > 0 ? `<li><span class="tag tag-lite tag-favorite">❤️ ${this.renderNumber(tweet.favorite_count)} like${tweet.favorite_count !== "1" ? "s" : ""}</span></li>` : ""}
 				`.trim() : ""}
-				${tweet.date ? `<time class="tag tag-naked tag-lite dt-published" datetime="${tweet.date.toISOString()}">${this.renderDate(tweet.date)}</time>` : ""}
-				${!this.isRetweet(tweet) ?
-					`<span class="tag tag-naked tag-lite${!options.showSentiment || sentimentValue === 0 ? " sr-only" : ""}">Mood ` +
-						(sentimentValue > 0 ? "+" : "") +
-						`<strong class="tweet-sentiment">${sentimentValue}</strong>` +
-						(sentimentValue > 0 ? " 🙂" : (sentimentValue < 0 ? " 🙁" : "")) +
-					"</span>" : ""}
-			</span>
+				${!this.isRetweet(tweet) && options.showSentiment ?
+				`<span class="tag tag-naked tag-lite">Mood ` +
+					(sentimentValue > 0 ? "+" : "") +
+					`<strong class="tweet-sentiment">${sentimentValue}</strong>` +
+					(sentimentValue > 0 ? " 🙂" : (sentimentValue < 0 ? " 🙁" : "")) +
+				"</span>" : ""}
+			</ul>
 		</li>`;
 
 		// source ? `<span class="tag tag-naked tag-lite">${source}</span>` : ""
@@ -363,10 +362,10 @@ class Twitter {
 
 		tweetOptions.attributes = " data-pagefind-body";
 
-		return `<ol class="tweets tweets-thread h-feed hfeed" data-pagefind-body>
-			${previousHtml ? `<ol class="tweets-replies h-feed hfeed">${previousHtml}</ol>` : ""}
+		return `<ol class="kimList tweets tweets-thread h-feed hfeed" data-pagefind-body>
+			${previousHtml ? `<ol class="kimList tweets-replies h-feed hfeed">${previousHtml}</ol>` : ""}
 			${await this.renderTweet(tweet, tweetOptions)}
-			${nextHtml ? `<ol class="tweets-replies h-feed hfeed">${nextHtml}</ol>` : ""}
+			${nextHtml ? `<ol class="kimList tweets-replies h-feed hfeed">${nextHtml}</ol>` : ""}
 		</ol>`;
 	}
 

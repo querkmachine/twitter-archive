@@ -4,6 +4,6 @@ let data = {
 	homeUrl: "https://beeps.website/",
 };
 
-data.avatar = `https://v1.indieweb-avatar.11ty.dev/${encodeURIComponent(data.homeUrl)}/`;
+data.avatar = `https://beeps.website/assets/images/avatar.png`;
 
 module.exports = data;

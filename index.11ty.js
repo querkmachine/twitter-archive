@@ -248,7 +248,7 @@ class Index extends Twitter {
 		let mostRecentTweets = tweets.filter(tweet => this.isOriginalPost(tweet)).sort(function(a,b) {
 				return b.date - a.date;
 			}).slice(0, 15);
-		let recentTweetsHtml = await Promise.all(mostRecentTweets.map(tweet => this.renderTweet(tweet)));
+		let recentTweetsHtml = await Promise.all(mostRecentTweets.map(tweet => this.renderTweet(tweet, { showPopularity: true })));
 		let mostPopularTweetsHtml = await Promise.all(this.getMostPopularTweets(tweets).slice(0, 6).map(tweet => this.renderTweet(tweet, { showPopularity: true })));
 
 		let links = this.getAllLinks(tweets);
@@ -259,107 +259,131 @@ class Index extends Twitter {
 		let linksCount12Months = links12Months.length;
 		let httpsLinksCount12Months = links12Months.filter(entry => entry.origin.startsWith("https:")).length;
 		return `
-		<h2 class="tweets-primary-count">
-			<span class="tweets-primary-count-num">${this.renderNumber(tweetCount)}</span> tweet${tweetCount !== 1 ? "s" : ""}
-		</h2>
+		<h1 class="kimHeading-xl">
+			<strong>${this.renderNumber(tweetCount)}</strong> tweet${tweetCount !== 1 ? "s" : ""} archived
+		</h1>
+		
+		<p class="kimBody"><a href="/search/">Search archive</a></p>
+		
+		<hr class="kimRule">
 
-		<is-land on:visible on:save-data="false">
-			<template data-island>
-				<h2>Search Tweets:</h2>
-				<div class="tweets-search">
-					<div id="search" class="tweets-search"></div>
-					<link href="/_pagefind/pagefind-ui.css" rel="stylesheet">
-					<script src="/_pagefind/pagefind-ui.js" onload="new PagefindUI({ element: '#search', showImages: false });"></script>
-				</div>
-			</template>
-		</is-land>
-
-		<div>
-			<h2><a href="/recent/">Recent:</a></h2>
-
-			<ol class="tweets tweets-linear-list h-feed hfeed" id="tweets-recent-home">
+		<section id="recent" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l"><a href="/recent/">Recent tweets</a></h2>
+			<ol class="kimList kimList-spaced tweets tweets-linear-list h-feed hfeed" id="tweets-recent-home">
 				${recentTweetsHtml.join("")}
 			</ol>
-		</div>
+		</section>
+		
+		<hr class="kimRule">
 
-		<div>
-			<h2><a href="/popular/">Popular:</a></h2>
-			<ol class="tweets tweets-linear-list">
+		<section id="popular" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l"><a href="/popular/">Popular tweets</a></h2>
+			<ol class="kimList kimList-spaced tweets tweets-linear-list">
 				${mostPopularTweetsHtml.join("")}
 			</ol>
-		</div>
+		</section>
+		
+		<hr class="kimRule">
 
-		<h2 id="retweets">I’ve retweeted other tweets ${this.renderNumber(retweetCount)} times (${this.renderPercentage(retweetCount, tweetCount)})</h2>
-		<div class="lo" style="--lo-stackpoint: 20em">
-			<div class="lo-c">
-				<h3>Most Retweeted</h3>
-				<ol>
-					${this.getTopUsersToRetweets(tweets).slice(0, 10).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} retweet${user.count != 1 ? "s" : ""}</li>`).join("")}
-				</ol>
+		<section id="retweets" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Retweets</h2>
+			<p class="kimBody">I’ve retweeted other tweets ${this.renderNumber(retweetCount)} times (${this.renderPercentage(retweetCount, tweetCount)}).</p>
+			<div class="kimGrid">
+				<div class="kimGrid_column kimGrid_column-full defiant:kimGrid_column-oneHalf">
+		  		<h3 class="kimHeading-m">Most retweeted (all time)</h3>
+					<ol class="kimList kimList-numbered">
+						${this.getTopUsersToRetweets(tweets).slice(0, 10).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} retweet${user.count != 1 ? "s" : ""}</li>`).join("")}
+					</ol>
+				</div>
+				<div class="kimGrid_column kimGrid_column-full defiant:kimGrid_column-oneHalf">
+					<h3 class="kimHeading-m">Most retweeted (last 12 months)</h3>
+					<ol class="kimList kimList-numbered">
+						${this.getTopUsersToRetweets(last12MonthsTweets).slice(0, 10).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} retweet${user.count != 1 ? "s" : ""}</li>`).join("")}
+					</ol>
+				</div>
 			</div>
-			<div class="lo-c">
-				<h3>Most Retweeted (Last 12 months)</h3>
-				<ol>
-					${this.getTopUsersToRetweets(last12MonthsTweets).slice(0, 10).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} retweet${user.count != 1 ? "s" : ""}</li>`).join("")}
-				</ol>
-			</div>
-		</div>
+		</section>
+		
+		<hr class="kimRule">
 
-		<h2 id="replies">Replies and Mentions</h2>
-		<h3>${this.renderPercentage(replyCount, tweetCount)} of my tweets are replies (×${this.renderNumber(replyCount)})</h3>
-		<div class="lo" style="--lo-stackpoint: 20em">
-			<div class="lo-c">
-				<h4>Most Replies To</h4>
-				<ol>
-					${this.getTopReplies(tweets).slice(0, 5).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} repl${user.count != 1 ? "ies" : "y"}</li>`).join("")}
-				</ol>
+		<section id="replies" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Replies and mentions</h2>
+			<p class="kimBody">${this.renderPercentage(replyCount, tweetCount)} of my tweets are replies (×${this.renderNumber(replyCount)}).</p>
+			<p class="kimBody">I’ve sent someone a mention ${this.renderNumber(mentionNotReplyCount)} times (${this.renderPercentage(mentionNotReplyCount, tweetCount)}).</p>
+			<div class="kimGrid">
+				<div class="kimGrid_column kimGrid_column-full defiant:kimGrid_column-oneHalf">
+					<h3 class="kimHeading-m">Most replied (all time)</h3>
+					<ol class="kimList kimList-numbered">
+						${this.getTopReplies(tweets).slice(0, 5).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} repl${user.count != 1 ? "ies" : "y"}</li>`).join("")}
+					</ol>
+				</div>
+				<div class="kimGrid_column kimGrid_column-full defiant:kimGrid_column-oneHalf">
+					<h3 class="kimHeading-m">Most replied (last 12 months)</h3>
+					<ol class="kimList kimList-numbered">
+						${this.getTopReplies(last12MonthsTweets).slice(0, 5).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} repl${user.count != 1 ? "ies" : "y"}</li>`).join("")}
+					</ol>
+				</div>
 			</div>
-			<div class="lo-c">
-				<h4>Most Replies To (Last 12 months)</h4>
-				<ol>
-					${this.getTopReplies(last12MonthsTweets).slice(0, 5).map(user => `<li><a href="${twitterLink(`https://twitter.com/${user.username}`)}">${user.username}</a> ${user.count} repl${user.count != 1 ? "ies" : "y"}</li>`).join("")}
-				</ol>
+		</section>
+		
+		<hr class="kimRule">
+
+		<section id="links" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Links</h2>
+			<p class="kimBody">${this.renderPercentage(httpsLinksCount, linksCount)} of the links I’ve posted are using the <code>https:</code> protocol (${this.renderNumber(httpsLinksCount)} of ${this.renderNumber(linksCount)}).</p>
+			<p class="kimBody">${this.renderPercentage(httpsLinksCount12Months, linksCount12Months)} of the links I’ve posted in the last 12 months are using the <code>https:</code> protocol  (${this.renderNumber(httpsLinksCount12Months)} of ${this.renderNumber(linksCount12Months)}).</p>
+			<div class="kimGrid">
+				<div class="kimGrid_column kimGrid_column-full defiant:kimGrid_column-oneHalf">
+					<h3 class="kimHeading-m">Top domains</h3>
+					<ol class="kimList kimList-numbered">
+						${this.getTopDomains(tweets).slice(0, 10).map(entry => `<li><a href="https://${entry.domain}">${entry.domain}</a> ${entry.count} tweets</li>`).join("")}
+					</ol>
+				</div>
+				<div class="kimGrid_column kimGrid_column-full defiant:kimGrid_column-oneHalf">
+					<h3 class="kimHeading-m">Top hosts</h3>
+					<ol class="kimList kimList-numbered">
+						${this.getTopHosts(tweets).slice(0, 10).map(entry => `<li><a href="https://${entry.host}">${entry.host}</a> ${entry.count} tweets</li>`).join("")}
+					</ol>
+				</div>
 			</div>
-		</div>
-		<h3>I’ve sent someone a mention ${this.renderNumber(mentionNotReplyCount)} times (${this.renderPercentage(mentionNotReplyCount, tweetCount)})</h3>
+		</section>
+		
+		<hr class="kimRule">
 
-		<h2 id="links">Most Frequent Sites I’ve Linked To</h2>
-		<h3>${this.renderPercentage(httpsLinksCount, linksCount)} of the links I’ve posted are using the <code>https:</code> protocol  (${this.renderNumber(httpsLinksCount)} of ${this.renderNumber(linksCount)})</h3>
-		<h3>${this.renderPercentage(httpsLinksCount12Months, linksCount12Months)} of the links I’ve posted in the last 12 months are using the <code>https:</code> protocol  (${this.renderNumber(httpsLinksCount12Months)} of ${this.renderNumber(linksCount12Months)})</h3>
+		<section id="likes-retweets" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Likes and retweets</h2>
+			<p class="kimBody-l">My tweets have been given about <span class="tag tag-lite tag-retweet">♻️ ${this.renderNumber(retweetsEarnedCount)}</span> retweets and <span class="tag tag-lite tag-favorite">❤️ ${this.renderNumber(likesEarnedCount)}</span> likes.</p>
+		</section>
+		
+		<hr class="kimRule">
 
-		<div class="lo" style="--lo-stackpoint: 20em">
-			<div class="lo-c">
-				<h4>Top Domains</h4>
-				<ol>
-					${this.getTopDomains(tweets).slice(0, 10).map(entry => `<li><a href="https://${entry.domain}">${entry.domain}</a> ${entry.count} tweets</li>`).join("")}
-				</ol>
-			</div>
-			<div class="lo-c">
-				<h4>Top Hosts</h4>
-				<ol>
-					${this.getTopHosts(tweets).slice(0, 10).map(entry => `<li><a href="https://${entry.host}">${entry.host}</a> ${entry.count} tweets</li>`).join("")}
-				</ol>
-			</div>
-		</div>
-
-		<h2 id="shared">My tweets have been given about <span class="tag tag-lite tag-retweet">♻️ ${this.renderNumber(retweetsEarnedCount)}</span> retweets and <span class="tag tag-lite tag-favorite">❤️ ${this.renderNumber(likesEarnedCount)}</span> likes</h2>
-
-		<h2 id="emoji">Top 5 Emoji Used in Tweets</h2>
-		<ol>
-			${emojis.slice(0, 5).map(obj => `<li>${obj.glyph} used ${obj.count} times on ${obj.tweetcount} tweets</li>`).join("")}
-		</ol>
-		<p><em>${this.renderNumber(emojis.length)} unique emoji on ${this.renderNumber(emoji.getTweetCount())} tweets (${this.renderPercentage(emoji.getTweetCount(), noRetweetsTweetCount)} of all tweets***)</em></p>
-		<h2 id="hashtags">Top 5 Hashtags</h2>
-		<ol>
-			${topHashes.slice(0, 5).map(hash => `<li><code>${hash.tag}</code> used ${hash.count} times ${hash.count > 1 && hash.count > hash.tweets.length ? `on ${hash.tweets.length} tweet${hash.tweets.length !== 1 ? "s" : ""}` : ""}</li>`).join("")}
-		</ol>
-		<p><em>${this.renderNumber(hashCount)} hashtags on ${this.renderNumber(tweetHashCount)} tweets (${this.renderPercentage(tweetHashCount, noRetweetsTweetCount)} of all tweets***)</em></p>
-		<h2 id="swears">Top 5 Swear Words</h2>
-		<ol>
-			${topSwears.slice(0, 5).map(swear => `<li><code>${this.renderSwearWord(swear.word)}</code> used ${swear.count} times ${swear.count > 1 && swear.count > swear.tweets.length ? `on ${swear.tweets.length} tweet${swear.tweets.length !== 1 ? "s" : ""}` : ""}</li>`).join("")}
-		</ol>
-		<p><em>${this.renderNumber(swearCount)} swear words on ${this.renderNumber(tweetSwearCount)} tweets (${this.renderPercentage(tweetSwearCount, noRetweetsTweetCount)} of all tweets***)</em></p>
-		<p>***: does not include retweets</p>
+		<section id="emoji" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Emoji</h2>
+			<p class="kimBody">${this.renderNumber(emojis.length)} unique emoji on ${this.renderNumber(emoji.getTweetCount())} tweets (${this.renderPercentage(emoji.getTweetCount(), noRetweetsTweetCount)} of all tweets, excluding retweets).</p>
+			<ol class="kimList kimList-numbered">
+				${emojis.slice(0, 5).map(obj => `<li>${obj.glyph} used ${obj.count} times on ${obj.tweetcount} tweets</li>`).join("")}
+			</ol>
+		</section>
+		
+		<hr class="kimRule">
+		
+		<section id="hashtags" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Hashtags</h2>
+			<p class="kimBody">${this.renderNumber(hashCount)} hashtags on ${this.renderNumber(tweetHashCount)} tweets (${this.renderPercentage(tweetHashCount, noRetweetsTweetCount)} of all tweets, excluding retweets).</p>
+			<ol class="kimList kimList-numbered">
+				${topHashes.slice(0, 5).map(hash => `<li><code>${hash.tag}</code> used ${hash.count} times ${hash.count > 1 && hash.count > hash.tweets.length ? `on ${hash.tweets.length} tweet${hash.tweets.length !== 1 ? "s" : ""}` : ""}</li>`).join("")}
+			</ol>
+		</section>
+		
+		<hr class="kimRule">
+		
+		<section id="swears" class="kim-!-padding-top-6 kim-!-padding-bottom-6">
+			<h2 class="kimHeading-l">Swear words</h2>
+			<p class="kimBody">${this.renderNumber(swearCount)} swear words on ${this.renderNumber(tweetSwearCount)} tweets (${this.renderPercentage(tweetSwearCount, noRetweetsTweetCount)} of all tweets, excluding retweets).</p>
+			<ol class="kimList kimList-numbered">
+				${topSwears.slice(0, 5).map(swear => `<li><code>${this.renderSwearWord(swear.word)}</code> used ${swear.count} times ${swear.count > 1 && swear.count > swear.tweets.length ? `on ${swear.tweets.length} tweet${swear.tweets.length !== 1 ? "s" : ""}` : ""}</li>`).join("")}
+			</ol>
+		</section>
 
 		<template id="rendered-twitter-link"><a href="/1234567890123456789/">twitter link</a></template>
 `;

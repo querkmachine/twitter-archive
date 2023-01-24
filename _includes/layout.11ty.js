@@ -23,10 +23,10 @@ module.exports = async function(data) {
 			newestHref = "";
 		}
 
-		navHtml = `<ul class="tweets-nav">
-			<li>${newestHref ? `<a href="${newestHref}">` : ""}⇤ Newest<span class="sr-only"> Tweet</span>${newestHref ? `</a>` : ""}</li>
-			<li>${previousHref ? `<a href="${previousHref}">` : ""}⇠ Newer<span class="sr-only"> Tweet</span>${previousHref ? `</a>` : ""}</li>
-			<li>${nextHref ? `<a href="${nextHref}">` : ""}Older<span class="sr-only"> Tweet</span> ⇢${nextHref ? `</a>` : ""}</li>
+		navHtml = `<ul class="kimList">
+			<li>${newestHref ? `<a class="kimLink-plain" href="${newestHref}">` : ""}⇤ Newest<span class="kim-!-sr"> Tweet</span>${newestHref ? `</a>` : ""}</li>
+			<li>${previousHref ? `<a class="kimLink-plain" href="${previousHref}">` : ""}⇠ Newer<span class="kim-!-sr"> Tweet</span>${previousHref ? `</a>` : ""}</li>
+			<li>${nextHref ? `<a class="kimLink-plain" href="${nextHref}">` : ""}Older<span class="kim-!-sr"> Tweet</span> ⇢${nextHref ? `</a>` : ""}</li>
 		</ul>`;
 	}
 
@@ -37,7 +37,7 @@ module.exports = async function(data) {
 	}
 
 	return `<!doctype html>
-<html lang="en">
+<html class="kimPage" lang="en">
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,7 +45,8 @@ module.exports = async function(data) {
 		<meta name="description" content="${meta_description}" />
 
 		<link rel="profile" href="https://microformats.org/profile/hatom">
-		<link rel="stylesheet" href="/assets/style.css">
+		<link rel="stylesheet" href="//beeps.website/assets/stylesheet.css">
+		<link rel="stylesheet" href="/assets/custom.css">
 		<script src="/assets/script.js" type="module"></script>
 		<script src="/assets/is-land.js" type="module"></script>
 
@@ -54,19 +55,25 @@ module.exports = async function(data) {
 			<meta http-equiv="refresh" content="0; url=/${data.tweet.id_str}/">
 			` : ""}
 	</head>
-	<body>
-		<header>
-			<h1 class="tweets-title"><a href="/"><img src="${metadata.avatar}" width="52" height="52" alt="${data.metadata.username}’s avatar" class="tweet-avatar">${data.metadata.username}’s Twitter Archive</a>${titleTweetNumberStr}</h1>
-			${!data.hideHeaderTweetsLink ? `<ul class="tweets-nav">
-				<li><a rel="home" href="${data.metadata.homeUrl}">← ${data.metadata.homeLabel}</a></li>
-			</ul>`: ""}
-			${navHtml}
+	<body class="kimPage_body">
+		<header class="kimMasthead">
+			<div class="kimWrapper kimMasthead_inner">
+				<a class="kimMasthead_logo kimLink-plain" href="${data.metadata.homeUrl}">
+					<span class="kim-!-sr">Back to home</span>
+					<span aria-hidden="true">beeps</span>
+				</a>
+				&rarr; <a class="kimLink-plain" href="/">twitter archive</a>
+			</div>
 		</header>
-		<main>
-			${data.content}
+		<main id="content">
+			<div class="kimWrapper">
+				${data.content}
+			</div>
 		</main>
-		<footer>
-			<p>An open source project from <a href="https://github.com/tweetback">tweetback</a>.</p>
+		<footer class="kimFooter">
+			<div class="kimWrapper kimFooter_inner">
+				<small class="kimFooter_boilerplate">An open source project from <a class="kimLink-plain" href="https://github.com/tweetback">tweetback</a>.</small>
+			</div>
 		</footer>
 	</body>
 </html>`;

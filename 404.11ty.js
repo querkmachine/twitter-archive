@@ -10,9 +10,9 @@ class Index extends Twitter {
 
 	async render(data) {
 		return `
-		<h2 class="tweets-primary-count">
-			Tweet not found.
-		</h2>
+		<p class="kimBody-l">
+			Tweet not found. 😔
+		</p>
 `;
 	}
 }

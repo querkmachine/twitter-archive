@@ -1,0 +1,57 @@
+.kimWrapper {
+	max-width: 40rem;
+}
+
+.tweets-linear-list .tweet {
+	margin-bottom: 3rem;
+}
+
+.tweets-thread > .tweets-replies {
+	opacity: .5;
+	filter: grayscale(1);
+}
+
+.tweets-thread > .tweets-replies:hover,
+.tweets-thread > .tweets-replies:focus-within {
+	opacity: 1;
+	filter: grayscale(0);
+}
+
+.tweet-text {
+	--†weet-background-color: rgba(255, 255, 255, .1);
+	position: relative;
+	background-color: var(--†weet-background-color);
+	white-space: pre-line;
+}
+
+.tweet-text::after {
+	content: '';
+	display: inline-block;
+	width: 2rem;
+	height: 2rem;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background-color: var(--†weet-background-color);
+	clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.tweet-text a {
+	word-wrap: break-word;
+}
+
+.tweet-medias > a {
+	display: inline-block;
+	line-height: 0;
+}
+
+.tweet-medias .tweet-media {
+	width: 100%;
+	max-width: 22rem;
+	margin: 0;
+}
+
+.tweet-medias img.tweet-media {
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+}

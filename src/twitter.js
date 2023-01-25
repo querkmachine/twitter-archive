@@ -347,9 +347,9 @@ class Twitter {
 			let previousHtml = direction === "previous" ? await this.getReplyHtml(replyTweet, direction, tweetOptions) : "";
 			let nextHtml = direction === "next" ? await this.getReplyHtml(replyTweet, direction, tweetOptions) : "";
 
-			repliesHtml.push((previousHtml ? `<ol class="tweets-replies">${previousHtml}</ol>` : "") +
+			repliesHtml.push((previousHtml ? `<ol class="kimList tweets-replies">${previousHtml}</ol>` : "") +
 				tweetHtml +
-				(nextHtml ? `<ol class="tweets-replies">${nextHtml}</ol>` : ""));
+				(nextHtml ? `<ol class="kimList tweets-replies">${nextHtml}</ol>` : ""));
 		}
 
 		return repliesHtml.join("");
